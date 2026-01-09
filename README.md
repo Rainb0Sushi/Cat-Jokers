@@ -1,6 +1,5 @@
 > WARNING <br />
-> This mod is currently experimental! Some mods might not be compatible, <br />
-> Most features are not fully implemented, and all Cats are incredibly common!
+> This mod is currently very experimental!
 
 # Cat-Jokers
 Cat Jokers for Balatro. Adds -- Jokers, 1 Deck, 1 Challenge, and 2 Blinds. <br />
