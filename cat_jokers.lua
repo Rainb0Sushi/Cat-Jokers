@@ -11,6 +11,13 @@ SMODS.Atlas {
     path = "catatlas.png"
 }
 
+SMODS.Atlas {
+    key = "cat_ears",
+    px = 71,
+    py = 95,
+    path = "catears.png"
+}
+
 SMODS.Rarity {
     key = "cat_rarity",
     loc_txt = {
@@ -254,8 +261,67 @@ SMODS.ObjectType {
         ["j_meow_siberian"] = true, -- retriggers cats
         ["j_meow_sphynx"] = true, -- adds random cat
         ["j_meow_mother"] = true, -- adds negative kitty
-        ["j_meow_kitty"] = true -- nothing
+        ["j_meow_kitty"] = true, -- nothing
     }
+}
+
+SMODS.Sticker {
+    key = "counts_as_cat",
+    loc_txt = {
+        ['default'] = {
+            name = 'Cat Sticker',
+            text = { 'Counts as a {C:purple}Cat{}.'}
+        }
+    },
+
+    atlas = "cat_ears",
+    pos = { x = 0, y = 0 },
+
+    badge_colour = G.C.PURPLE,
+    default_compat = true,
+
+    should_apply = function(self,card,center,area,bypass_roll)
+        print(card.config.center.key)
+        for index,value in ipairs({'j_lucky_cat', 'j_jolly', 'j_joker', 'j_8_ball', 'j_loyalty_card'}) do
+            if value == card.config.center.key then
+                print("card is in cat sticker list")
+                return true
+            end
+        end
+        print("card is not in cat sticker list")
+        return false
+    end
+}
+
+SMODS.Tag {
+    key = 'cat_tag',
+    loc_txt = {
+        ['default'] = {
+            name = 'Cat Tag',
+            text = { 'cat sticker' }
+        }
+    },
+
+    atlas = 'cat_atlas',
+    pos = { x = 0, y = 0 },
+
+    in_pool = function(self,args)
+        return true
+    end,
+
+    trigger = function(joker)
+        joker:add_sticker('counts_as_cat')
+    end,
+
+    apply = function(self,tag,context)
+        for _,joker in ipairs (G.jokers.cards) do
+            if joker.config.center.rarity ~= 'meow_cat_rarity' then
+                tag:yep('meow!',G.C.PURPLE,joker:add_sticker('meow_counts_as_cat', true))
+                tag.triggered = true
+            end
+        end
+        return false
+    end
 }
 
 SMODS.Back {
@@ -263,7 +329,7 @@ SMODS.Back {
     loc_txt = {
         ['default'] = {
             name = 'Cat Deck',
-            text = { 'Start with a Mother Joker.' }
+            text = { 'Start with a Mother Joker.', 'Cats are {X:mult,C:white}2X{} as common.' }
         }
     },
     
@@ -276,6 +342,7 @@ SMODS.Back {
             delay = 0.5,
             func = function()
                 SMODS.add_card{ set = "Joker", area = G.jokers, key = 'j_meow_mother' }
+                G.P_JOKER_RARITY_POOLS['meow_cat_rarity'].weight = 5
                 return true
             end,
         }))
