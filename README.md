@@ -1,3 +1,7 @@
+> WARNING <br />
+> This mod is currently experimental! Some mods might not be compatible, <br />
+> Most features are not fully implemented, and all Cats are incredibly common!
+
 # Cat-Jokers
 Cat Jokers for Balatro. Adds -- Jokers, 1 Deck, 1 Challenge, and 2 Blinds. <br />
 Cat Jokers are most powerful when used in big groups, so most add Chips or Mult based off <br /> of how many other Cat Jokers there are, while some make it easier to get other Cat Jokers.
