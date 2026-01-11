@@ -1,3 +1,15 @@
+-- todo list
+-- kitty debuff (-10 chips per cat) | DONE
+-- make siberian even worse? 1 in 6? | wait until testing kitty debuff, might fix problems
+-- count chips/mult under description
+-- figure out config
+-- load_file
+-- 20-30 jokers (sell cat to disable boss blind, if you do and have >1 cat, earn $10) ()
+-- cat sticker tarot | DONE
+-- make cat sticker bigger/better | DONE(?)
+-- cat blind (debuff all cats)
+
+
 SMODS.current_mod.optional_features = function()
     return {
         retrigger_joker = true
@@ -40,7 +52,7 @@ SMODS.Joker {
     loc_txt = {
         ['default'] = {
             name = 'Siamese Joker',
-            text = { '{C:chips}+20{} chips for', 'each {C:purple}Cat{} Joker.'}
+            text = { '{C:chips}+20{} Chips for', 'each {C:purple}Cat{} Joker'}
         }
     },
 
@@ -60,7 +72,7 @@ SMODS.Joker {
         if context.joker_main then
             card.ability.extra.chipsToAdd = 0
             for _,joker in ipairs (G.jokers.cards) do
-                if joker.config.center.rarity == 'meow_cat_rarity' then
+                if joker.config.center.rarity == 'meow_cat_rarity' or joker.ability.meow_counts_as_cat then
                     card.ability.extra.chipsToAdd = card.ability.extra.chipsToAdd + 20
                 end
             end
@@ -76,7 +88,7 @@ SMODS.Joker {
     loc_txt = {
         ['default'] = {
             name = 'Persian Joker',
-            text = { '{C:mult}+3{} Mult for', 'each {C:purple}Cat{} Joker.'}
+            text = { '{C:mult}+3{} Mult for', 'each {C:purple}Cat{} Joker'}
         }
     },
     
@@ -96,7 +108,7 @@ SMODS.Joker {
         if context.joker_main then
             card.ability.extra.multToAdd = 0
             for _,joker in ipairs (G.jokers.cards) do
-                if joker.config.center.rarity == 'meow_cat_rarity' then
+                if joker.config.center.rarity == 'meow_cat_rarity' or joker.ability.meow_counts_as_cat  then
                     card.ability.extra.multToAdd = card.ability.extra.multToAdd + 3
                 end
             end
@@ -112,7 +124,7 @@ SMODS.Joker {
     loc_txt = {
         ['default'] = {
             name = 'Shorthair Joker',
-            text = { 'Gains {X:mult,C:white}X0.25{} Mult for', 'each {C:purple}Cat{} Joker.' }
+            text = { 'Gains {X:mult,C:white}X0.25{} Mult for', 'each {C:purple}Cat{} Joker' }
         }
     },
     
@@ -132,7 +144,7 @@ SMODS.Joker {
         if context.joker_main then
             card.ability.extra.xMultToAdd = 1
             for _,joker in ipairs (G.jokers.cards) do
-                if joker.config.center.rarity == 'meow_cat_rarity' then
+                if joker.config.center.rarity == 'meow_cat_rarity' or joker.ability.meow_counts_as_cat  then
                     card.ability.extra.xMultToAdd = card.ability.extra.xMultToAdd + 0.25
                 end
             end
@@ -144,29 +156,78 @@ SMODS.Joker {
 }
 
 SMODS.Joker {
+    key = "meowth",
+    loc_txt = {
+        ['default'] = {
+            name = 'Meowth',
+            text = { 'Earns {C:money}$2{} for', 'each {C:purple}Cat{} Joker', 'at end of round' }
+        }
+    },
+
+    atlas = "cat_atlas",
+    pos = { x = 2, y = 1 },
+
+    config = {
+        extra = {
+            moneyToAdd = 0,
+        }
+    },
+
+    rarity = "meow_cat_rarity",
+    cost = 6,
+
+    calculate = function(self, card, context)
+        if context.blind_defeated then
+            card.ability.extra.moneyToAdd = 0
+            for _,joker in ipairs (G.jokers.cards) do
+                if joker.config.center.rarity == 'meow_cat_rarity' or joker.ability.meow_counts_as_cat  then
+                    card.ability.extra.moneyToAdd = card.ability.extra.moneyToAdd + 2
+                end
+            end
+            return {
+                dollars = card.ability.extra.moneyToAdd
+            }
+        end
+    end
+}
+
+SMODS.Joker {
     key = "siberian",
     loc_txt = {
         ['default'] = {
             name = 'Siberian Joker',
-            text = { 'Retriggers all {C:purple}Cat{} Jokers.' }
+            text = { '{C:green}1 in 3{} chance to retrigger', 'each {C:purple}Cat{} Joker' }
         }
     },
     
     atlas = "cat_atlas",
     pos = { x = 0, y = 1 },
 
-    config = { extra = { repetitions = 1 } },
+    config = {extra = {
+        numerator = 1,
+        denominator = 3
+    }},
+
+    loc_vars = function(self,info_queue,card)
+        local num,denom = SMODS.get_probability_vars(card, 1, 3)
+        return {vars = {num,denom}}
+    end,
 
     rarity = 'meow_cat_rarity',
     cost = 10,
     
     calculate = function(self, card, context)
         if context.retrigger_joker_check then
-            if context.other_card.config.center.rarity == 'meow_cat_rarity' then
-                return {
-                    repetitions = card.ability.extra.repetitions,
-                    card = context.other_card
-                }
+            if context.other_card.config.center.rarity == 'meow_cat_rarity' or context.other_card.ability.meow_counts_as_cat then
+                if SMODS.pseudorandom_probability(card, 'five_nights_at_freddys', 1, 3) then
+                    return {
+                        repetitions = 1,
+                        card = context.other_card,
+                        message = 'Meow!'
+                    }
+                else
+                    return {message = 'Aww...'}
+                end
             end
         end
     end
@@ -241,7 +302,7 @@ SMODS.Joker { -- kitty
     loc_txt = {
         ['default'] = {
             name = 'Kitty Cat',
-            text = { 'Does nothing,', 'but scales other Cats' }
+            text = { '{C:chips}-3{} Chips per {C:purple}Cat{}', 'but scales other {C:purple}Cats{}' }
         }
     },
     
@@ -250,6 +311,26 @@ SMODS.Joker { -- kitty
 
     rarity = 'meow_cat_rarity',
     cost = 1,
+
+    config = {
+        extra = {
+            chipsToAdd = 0
+        }
+    },
+
+    calculate = function(self, card, context) 
+        if context.joker_main then
+            card.ability.extra.chipsToAdd = 0
+            for _,joker in ipairs (G.jokers.cards) do
+                if joker.config.center.rarity == 'meow_cat_rarity' or joker.ability.meow_counts_as_cat then
+                    card.ability.extra.chipsToAdd = card.ability.extra.chipsToAdd - 3
+                end
+            end
+            return {
+                chips = card.ability.extra.chipsToAdd
+            }
+        end
+    end
 }
 
 SMODS.ObjectType {
@@ -270,7 +351,7 @@ SMODS.Sticker {
     loc_txt = {
         ['default'] = {
             name = 'Cat Sticker',
-            text = { 'Counts as a {C:purple}Cat{}.'}
+            text = { 'Counts as a {C:purple}Cat{}', 'for all calculations'}
         }
     },
 
@@ -324,6 +405,35 @@ SMODS.Tag {
     end
 }
 
+SMODS.Consumable {
+    key = 'cat_tarot',
+    set = 'Tarot',
+    loc_txt = {
+        ['default'] = {
+            name = 'Cat',
+            text = { 'Turns one Joker', 'into a {C:Purple}Cat{}'}
+        }
+    },
+
+    atlas = "cat_atlas",
+    pos = { x = 0, y = 0 },
+
+    cost = 3,
+    
+    can_use = function(self,card)
+        local highlighted = G.jokers.highlighted or {}
+        if #highlighted == 1 then
+            return (not highlighted[1]:is_rarity('meow_cat_rarity')) and (not highlighted[1].ability.counts_as_cat)
+        end
+        return false
+    end,
+
+    use = function(self,card,area,copier)
+        local highlighted = G.jokers.highlighted or {}
+        highlighted[1]:add_sticker('meow_counts_as_cat', true)
+    end
+}
+
 SMODS.Back {
     key = "cat_deck",
     loc_txt = {
@@ -342,7 +452,7 @@ SMODS.Back {
             delay = 0.5,
             func = function()
                 SMODS.add_card{ set = "Joker", area = G.jokers, key = 'j_meow_mother' }
-                G.P_JOKER_RARITY_POOLS['meow_cat_rarity'].weight = 5
+                G.P_JOKER_RARITY_POOLS['meow_cat_rarity'].weight = 0.5
                 return true
             end,
         }))
