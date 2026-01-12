@@ -1,7 +1,7 @@
 -- todo list
 -- kitty debuff (-10 chips per cat) | DONE
--- make siberian even worse? 1 in 6? | wait until testing kitty debuff, might fix problems
--- count chips/mult under description
+-- make siberian even worse? 1 in 6? | wait until testing kitty debuff, might fix problems (it probably did)
+-- count chips/mult under description | DONE
 -- figure out config
 -- load_file
 -- 20-30 jokers (sell cat to disable boss blind, if you do and have >1 cat, earn $10) ()
@@ -52,7 +52,11 @@ SMODS.Joker {
     loc_txt = {
         ['default'] = {
             name = 'Siamese Joker',
-            text = { '{C:chips}+20{} Chips for', 'each {C:purple}Cat{} Joker'}
+            text = { 
+                '{C:chips}+20{} Chips for',
+                'each {C:purple}Cat{} Joker',
+                '{C:inactive}(Currently {C:chips}+#1#{C:inactive} Chips){}' 
+            }
         }
     },
 
@@ -67,6 +71,20 @@ SMODS.Joker {
 
     rarity = 'meow_cat_rarity',
     cost = 4,
+
+    loc_vars = function(self, info_queue, card)
+        if G.jokers then
+            local a = 0
+            for _,joker in ipairs (G.jokers.cards) do
+                if joker.config.center.rarity == 'meow_cat_rarity' or joker.ability.meow_counts_as_cat then
+                    a = a + 20
+                end
+            end
+            return {vars = {a}}
+        else
+            return {vars = {20}}
+        end
+    end,
 
     calculate = function(self, card, context) 
         if context.joker_main then
@@ -88,7 +106,11 @@ SMODS.Joker {
     loc_txt = {
         ['default'] = {
             name = 'Persian Joker',
-            text = { '{C:mult}+3{} Mult for', 'each {C:purple}Cat{} Joker'}
+            text = { 
+                '{C:mult}+3{} Mult for',
+                'each {C:purple}Cat{} Joker',
+                '{C:inactive}(Currently {C:mult}+#1#{C:inactive} Mult){}'
+            }
         }
     },
     
@@ -103,6 +125,20 @@ SMODS.Joker {
 
     rarity = 'meow_cat_rarity',
     cost = 4,
+
+    loc_vars = function(self, info_queue, card)
+        if G.jokers then
+            local a = 0
+            for _,joker in ipairs (G.jokers.cards) do
+                if joker.config.center.rarity == 'meow_cat_rarity' or joker.ability.meow_counts_as_cat then
+                    a = a + 3
+                end
+            end
+            return {vars = {a}}
+        else
+            return {vars = {3}}
+        end
+    end,
 
     calculate = function(self, card, context) 
         if context.joker_main then
@@ -124,7 +160,11 @@ SMODS.Joker {
     loc_txt = {
         ['default'] = {
             name = 'Shorthair Joker',
-            text = { 'Gains {X:mult,C:white}X0.25{} Mult for', 'each {C:purple}Cat{} Joker' }
+            text = { 
+                'Gains {X:mult,C:white}X0.25{} Mult for',
+                'each {C:purple}Cat{} Joker',
+                '{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult){}'
+            }
         }
     },
     
@@ -139,6 +179,20 @@ SMODS.Joker {
 
     rarity = 'meow_cat_rarity',
     cost = 5,
+
+    loc_vars = function(self, info_queue, card)
+        if G.jokers then
+            local a = 1
+            for _,joker in ipairs (G.jokers.cards) do
+                if joker.config.center.rarity == 'meow_cat_rarity' or joker.ability.meow_counts_as_cat then
+                    a = a + 0.25
+                end
+            end
+            return {vars = {a}}
+        else
+            return {vars = {1.25}}
+        end
+    end,
 
     calculate = function(self, card, context) 
         if context.joker_main then
@@ -160,7 +214,11 @@ SMODS.Joker {
     loc_txt = {
         ['default'] = {
             name = 'Meowth',
-            text = { 'Earns {C:money}$2{} for', 'each {C:purple}Cat{} Joker', 'at end of round' }
+            text = { 
+                'Earns {C:money}$2{} for each {C:purple}Cat{}', 
+                'Joker at end of round', 
+                '{C:inactive}(Currently {C:money}$#1#{C:inactive}){}' 
+            }
         }
     },
 
@@ -175,6 +233,20 @@ SMODS.Joker {
 
     rarity = "meow_cat_rarity",
     cost = 6,
+
+    loc_vars = function(self, info_queue, card)
+        if G.jokers then
+            local a = 0
+            for _,joker in ipairs (G.jokers.cards) do
+                if joker.config.center.rarity == 'meow_cat_rarity' or joker.ability.meow_counts_as_cat then
+                    a = a + 2
+                end
+            end
+            return {vars = {a}}
+        else
+            return {vars = {2}}
+        end
+    end,
 
     calculate = function(self, card, context)
         if context.blind_defeated then
@@ -302,7 +374,11 @@ SMODS.Joker { -- kitty
     loc_txt = {
         ['default'] = {
             name = 'Kitty Cat',
-            text = { '{C:chips}-3{} Chips per {C:purple}Cat{}', 'but scales other {C:purple}Cats{}' }
+            text = { 
+                '{C:chips}-1{} Chips per {C:purple}Cat{}', 
+                'but scales other {C:purple}Cats{}',
+                '{C:inactive}(Currently {C:chips}-#1#{C:inactive} Chips){}'
+            }
         }
     },
     
@@ -318,12 +394,26 @@ SMODS.Joker { -- kitty
         }
     },
 
+    loc_vars = function(self, info_queue, card)
+        if G.jokers then
+            local a = 0
+            for _,joker in ipairs (G.jokers.cards) do
+                if joker.config.center.rarity == 'meow_cat_rarity' or joker.ability.meow_counts_as_cat then
+                    a = a + 1
+                end
+            end
+            return {vars = {a}}
+        else
+            return {vars = {1}}
+        end
+    end,
+
     calculate = function(self, card, context) 
         if context.joker_main then
             card.ability.extra.chipsToAdd = 0
             for _,joker in ipairs (G.jokers.cards) do
                 if joker.config.center.rarity == 'meow_cat_rarity' or joker.ability.meow_counts_as_cat then
-                    card.ability.extra.chipsToAdd = card.ability.extra.chipsToAdd - 3
+                    card.ability.extra.chipsToAdd = card.ability.extra.chipsToAdd - 1
                 end
             end
             return {
